@@ -31,8 +31,8 @@ const getMangaList = async (req, res) => {
         return {
           ...manga,
           coverUrl: coverFileName
-            ? `https://uploads.mangadex.org/covers/${manga.id}/${coverFileName}`
-            : null,
+            ? `/api/manga/cover?mangaId=${manga.id}&fileName=${coverFileName}`
+            : null
         };
       }),
     };
@@ -49,4 +49,38 @@ const getMangaList = async (req, res) => {
   }
 };
 
-module.exports = { getMangaList };
+
+const getCoverProxy = async (req, res) => {
+  try {
+    const { mangaId, fileName } = req.query;
+
+    if (!mangaId || !fileName) {
+      return res.status(400).json({ message: "Missing parameters" });
+    }
+
+    const imageUrl = `https://uploads.mangadex.org/covers/${mangaId}/${fileName}`;
+
+    const response = await axios.get(imageUrl, {
+      responseType: "arraybuffer",
+      headers: {
+        Referer: "https://mangadex.org/",
+        Origin: "https://mangadex.org",
+        Accept: "image/*,*/*;q=0.8",
+      },
+    });
+
+    res.setHeader("Content-Type", response.headers["content-type"]);
+    res.setHeader(
+      "Cache-Control",
+      "public, s-maxage=86400, stale-while-revalidate=604800"
+    );
+
+    return res.send(response.data);
+
+  } catch (error) {
+    console.error("Cover proxy error:", error.message);
+    return res.status(500).json({ message: "Failed to fetch image" });
+  }
+};
+
+module.exports = { getMangaList, getCoverProxy };
