@@ -31,7 +31,7 @@ const getMangaList = async (req, res) => {
         return {
           ...manga,
           coverUrl: coverFileName
-            ? `https://uploads.mangadex.org/covers/${manga.id}/${coverFileName}.512.jpg`
+            ? `https://uploads.mangadex.org/covers/${manga.id}/${coverFileName}`
             : null,
         };
       }),
