@@ -9,9 +9,12 @@ app.use(express.json());
 
 app.use("/api/manga", mangaRoutes);
 
-app.get("/test", (req, res) => {
+app.get("/", (req, res) => {
   res.send("Welcome to the Manga API");
 });
 
 // ❌ REMOVE app.listen()
-module.exports = app;
+// ✅ Export instead
+app.listen(5000, () => {
+  console.log("Server is running on port 3000");
+});
