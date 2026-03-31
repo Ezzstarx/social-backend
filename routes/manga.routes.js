@@ -1,10 +1,10 @@
 const express = require("express");
 const { getMangaList, getCoverProxy } = require("../controllers/manga.controller");
 
-const router = express.Router();
+const MangaRouter = express.Router();
 
 // GET /api/manga
-router.get("/", getMangaList);
-router.get("/cover", getCoverProxy);
+MangaRouter.get("/", getMangaList);
+MangaRouter.get("/cover", getCoverProxy);
 
-module.exports = router;
+module.exports = MangaRouter;

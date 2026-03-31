@@ -1,15 +1,15 @@
 const express = require("express");
 const cors = require("cors");
-const mangaRoutes = require("./routes/manga.routes");
-const storiesRoutes = require("./routes/stories.routes");
+const MangaRouter = require("../routes/manga.routes");
+const StoryRouter = require("../routes/stories.routes");
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
-app.use("/api/manga", mangaRoutes);
-app.use("/api/stories", storiesRoutes);
+app.use("/api/manga", MangaRouter);
+app.use("/api/stories", StoryRouter);
 
 app.get("/", (req, res) => {
   res.send("Welcome to the Manga API");

@@ -1,10 +1,10 @@
 const express = require("express");
 const { getAllStories, getStory } = require("../controllers/stories.controller");
 
-const router = express.Router();
+const StoryRouter = express.Router();
 
 // GET /api/stories
-router.get("/", getAllStories);
-router.get("/:id", getStory);
+StoryRouter.get("/", getAllStories);
+StoryRouter.get("/:id", getStory);
 
-module.exports = router;
+module.exports = StoryRouter;
