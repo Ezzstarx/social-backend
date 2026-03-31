@@ -7,5 +7,4 @@ const router = express.Router();
 router.get("/", getMangaList);
 router.get("/cover", getCoverProxy);
 
-
 module.exports = router;
