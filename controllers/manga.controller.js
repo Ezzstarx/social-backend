@@ -12,59 +12,47 @@ const getMangaList = async (req, res) => {
     const params = {
       ...req.query,
       "includes[]": ["cover_art", "author", "artist"],
-      "contentRating[]": req.query["contentRating[]"] || ["safe", "suggestive"]
     };
 
+    // Default content rating
+    if (!req.query["contentRating[]"]) {
+      params["contentRating[]"] = ["safe", "suggestive"];
+    }
+
     const response = await axios.get(baseURL, { params });
+
     const data = response.data;
 
-    const formattedManga = data.data.map((manga) => {
-      const coverArt = manga.relationships?.find(
-        (rel) => rel.type === "cover_art"
-      );
+    // Add coverUrl
+    const transformedData = {
+      ...data,
+      data: data.data.map((manga) => {
+        const coverArt = manga.relationships.find(
+          (rel) => rel.type === "cover_art"
+        );
 
-      const authorRel = manga.relationships?.find(
-        (rel) => rel.type === "author"
-      );
+        const coverFileName = coverArt?.attributes?.fileName;
 
-      const fileName = coverArt?.attributes?.fileName;
+        return {
+          ...manga,
+          coverUrl: coverFileName
+            ? `/api/manga/cover?mangaId=${manga.id}&fileName=${coverFileName}`
+            : null
+        };
+      }),
+    };
 
-      const genres = manga.attributes.tags
-        ?.filter((tag) => tag.attributes.group === "genre")
-        ?.map((tag) => tag.attributes.name.en)
-        ?.join(", ");
+    res.status(200).json(transformedData);
+  } catch (error) {
+    console.error("Manga API error:", error.message);
 
-      const title =
-        manga.attributes?.title?.en ||
-        Object.values(manga.attributes?.title || {})[0];
-
-      return {
-        id: manga.id,
-        title,
-        description:
-          manga.attributes?.description?.en || "No description available",
-        imageUrl: fileName
-          ? `/api/manga/cover?mangaId=${manga.id}&fileName=${fileName}`
-          : null,
-        author: authorRel?.attributes?.name || "Unknown",
-        genre: genres || "N/A"
-      };
-    });
-
-    res.status(200).json({
-      success: true,
-      data: formattedManga
-    });
-
-  } catch (err) {
     res.status(500).json({
       success: false,
       message: "Failed to fetch manga",
-      error: err.message
+      error: error.message,
     });
   }
 };
-
 // GET /api/manga/cover
 const getCoverProxy = async (req, res) => {
   try {
