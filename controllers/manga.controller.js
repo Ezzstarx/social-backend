@@ -4,11 +4,7 @@ const Manga = require("../models/Manga");
 const MangaEpisode = require("../models/MangaEpisode");
 const User = require("../models/User");
 
-/* =====================================================
-   🌐 MANGADEX SECTION (External API)
-===================================================== */
 
-// GET /api/manga
 const getMangaList = async (req, res) => {
   try {
     const baseURL = "https://api.mangadex.org/manga";
@@ -22,27 +18,44 @@ const getMangaList = async (req, res) => {
     const response = await axios.get(baseURL, { params });
     const data = response.data;
 
-    const transformed = {
-      ...data,
-      data: data.data.map((manga) => {
-        const coverArt = manga.relationships?.find(
-          (rel) => rel.type === "cover_art"
-        );
+    const formattedManga = data.data.map((manga) => {
+      const coverArt = manga.relationships?.find(
+        (rel) => rel.type === "cover_art"
+      );
 
-        const fileName = coverArt?.attributes?.fileName;
+      const authorRel = manga.relationships?.find(
+        (rel) => rel.type === "author"
+      );
 
-        return {
-          id: manga.id,
-          title: manga.attributes?.title,
-          description: manga.attributes?.description,
-          coverUrl: fileName
-            ? `/api/manga/cover?mangaId=${manga.id}&fileName=${fileName}`
-            : null
-        };
-      })
-    };
+      const fileName = coverArt?.attributes?.fileName;
 
-    res.status(200).json(transformed);
+      const genres = manga.attributes.tags
+        ?.filter((tag) => tag.attributes.group === "genre")
+        ?.map((tag) => tag.attributes.name.en)
+        ?.join(", ");
+
+      const title =
+        manga.attributes?.title?.en ||
+        Object.values(manga.attributes?.title || {})[0];
+
+      return {
+        id: manga.id,
+        title,
+        description:
+          manga.attributes?.description?.en || "No description available",
+        imageUrl: fileName
+          ? `/api/manga/cover?mangaId=${manga.id}&fileName=${fileName}`
+          : null,
+        author: authorRel?.attributes?.name || "Unknown",
+        genre: genres || "N/A"
+      };
+    });
+
+    res.status(200).json({
+      success: true,
+      data: formattedManga
+    });
+
   } catch (err) {
     res.status(500).json({
       success: false,
