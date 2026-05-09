@@ -145,7 +145,12 @@ const getChaptersByMangaId = async (req, res) => {
 const getChapterPages = async (req, res) => {
   try {
     const { id } = req.params;
-    const response = await axios.get(`https://api.mangadex.org/at-home/server/${id}`);
+    const response = await axios.get(`https://api.mangadex.org/at-home/server/${id}`, {
+      headers: {
+        "Referer": "https://mangadex.org/",
+        "User-Agent": "YourMangaApp/1.0 (contact@yourapp.com)" // optional but good practice
+      }
+    });
     const { baseUrl, chapter } = response.data;
     const { hash, data, dataSaver } = chapter;
     const pages = data.map((filename) => `${baseUrl}/data/${hash}/${filename}`);
