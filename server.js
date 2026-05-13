@@ -5,6 +5,7 @@ const cors = require("cors");
 const mangaRoutes = require("./routes/manga.routes");
 const storiesRoutes = require("./routes/stories.routes");
 const authRoutes = require("./routes/auth.routes"); // if using OAuth/JWT
+const eventRoutes = require('./routes/event.routes');
 
 // 🔹 App init
 const app = express();
@@ -17,6 +18,7 @@ app.use(express.json());
 app.use("/api/manga", mangaRoutes);
 app.use("/api/stories", storiesRoutes);
 app.use("/api/auth", authRoutes);
+app.use('/api/events', eventRoutes);
 
 // 🔹 Root route
 app.get("/", (req, res) => {
