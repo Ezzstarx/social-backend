@@ -3,13 +3,74 @@ const Manga = require("../models/Manga");
 const MangaEpisode = require("../models/MangaEpisode");
 const User = require("../models/User");
 
-/* =====================================================
-   🌐 MangaDex (external API) – Proxy Functions
-===================================================== */
+// In-memory cache
+let cachedMangaList = null;
+let lastFetchTime = 0;
+const CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6 hours
 
-// GET /api/manga
+// In-memory cache for top10
+let cachedTop10 = null;
+let lastTop10Fetch = 0;
+const TOP10_TTL = 6 * 60 * 60 * 1000; // 6 hours
+
+const getMangaTop = async (req, res) => {
+  try {
+    // Serve from cache if fresh
+    if (cachedTop10 && (Date.now() - lastTop10Fetch) < TOP10_TTL) {
+      console.log('Serving cached top10 manga');
+      return res.status(200).json(cachedTop10);
+    }
+
+    const baseURL = "https://api.mangadex.org/manga";
+    const params = {
+      limit: 10,
+      "order[followedCount]": "desc",
+      "includes[]": ["cover_art", "author", "artist"],
+      "contentRating[]": ["safe", "suggestive", "erotica", "pornographic"], // adjust as needed
+    };
+
+    const response = await axios.get(baseURL, { params });
+    const data = response.data;
+
+    const transformedData = {
+      ...data,
+      data: data.data.map((manga) => {
+        const coverArt = manga.relationships.find(
+          (rel) => rel.type === "cover_art"
+        );
+        const coverFileName = coverArt?.attributes?.fileName;
+        return {
+          ...manga,
+          coverUrl: coverFileName
+            ? `/api/manga/cover?mangaId=${manga.id}&fileName=${coverFileName}`
+            : null,
+        };
+      }),
+    };
+
+    // Store in cache
+    cachedTop10 = transformedData;
+    lastTop10Fetch = Date.now();
+
+    res.status(200).json(transformedData);
+  } catch (error) {
+    console.error("Top10 API error:", error.message);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch top manga",
+      error: error.message,
+    });
+  }
+};
+
 const getMangaList = async (req, res) => {
   try {
+    // Serve from cache if still fresh
+    if (cachedMangaList && (Date.now() - lastFetchTime) < CACHE_TTL_MS) {
+      console.log('Serving cached manga list');
+      return res.status(200).json(cachedMangaList);
+    }
+
     const baseURL = "https://api.mangadex.org/manga";
     const params = {
       ...req.query,
@@ -37,6 +98,11 @@ const getMangaList = async (req, res) => {
         };
       }),
     };
+
+    // Store in cache
+    cachedMangaList = transformedData;
+    lastFetchTime = Date.now();
+
     res.status(200).json(transformedData);
   } catch (error) {
     console.error("Manga API error:", error.message);
@@ -380,6 +446,7 @@ const searchManga = async (req, res) => {
 module.exports = {
   // MangaDex
   getMangaList,
+  getMangaTop,
   getCoverProxy,
   getMangaByIdMangaDex,
   getChaptersByMangaId,

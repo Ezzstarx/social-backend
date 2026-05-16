@@ -11,6 +11,7 @@ const {
   getChaptersByMangaId,
   getChapterPages,
   searchManga,
+  getMangaTop,
 } = require("../controllers/manga.controller");
 
 const MangaRouter = express.Router();
@@ -24,6 +25,7 @@ MangaRouter.get("/search", searchManga);
    🌐 MangaDex (external API)
 ----------------------------*/
 MangaRouter.get("/", getMangaList);                     // List/explore
+MangaRouter.get("/top10", getMangaTop);                     // List/explore
 MangaRouter.get("/cover", getCoverProxy);               // Cover image proxy
 MangaRouter.get("/external/:id", getMangaByIdMangaDex); // MangaDex manga details
 MangaRouter.get("/external/:id/chapters", getChaptersByMangaId); // Chapters list
