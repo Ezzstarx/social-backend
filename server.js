@@ -1,5 +1,8 @@
 const express = require("express");
 const cors = require("cors");
+const passport = require("passport");
+require("dotenv").config();
+require("./config/passport");
 
 // 🔹 Routes
 const mangaRoutes = require("./routes/manga.routes");
@@ -13,6 +16,7 @@ const app = express();
 // 🔹 Middlewares
 app.use(cors());
 app.use(express.json());
+app.use(passport.initialize());
 
 // 🔹 Routes
 app.use("/api/manga", mangaRoutes);
