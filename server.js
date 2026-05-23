@@ -26,14 +26,49 @@ app.use("/api/auth", authRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/gist', gistRoutes);
 
+// 🆕 Ezzstar platform extension routes registration
+app.use('/api/onboarding', require('./routes/onboarding.routes'));
+app.use('/api/wallet', require('./routes/wallet.routes'));
+app.use('/api/xp', require('./routes/xp.routes'));
+app.use('/api/gists', require('./routes/gists.routes'));
+app.use('/api/views', require('./routes/engagement.routes'));
+app.use('/api/comments', require('./routes/engagement.routes'));
+app.use('/api/shares', require('./routes/engagement.routes'));
+app.use('/api/reactions', require('./routes/engagement.routes'));
+app.use('/api/tips', require('./routes/tips.routes'));
+app.use('/api/boosts', require('./routes/boosts.routes'));
+app.use('/api/tournaments', require('./routes/tournaments.routes'));
+app.use('/api/notifications', require('./routes/notifications.routes'));
+app.use('/api/admin', require('./routes/admin.routes'));
+app.use('/api/feed', require('./routes/feed.routes'));
+
 // 🔹 Root route
 app.get("/", (req, res) => {
   res.send("Welcome to the Manga API 🚀");
 });
 
-// 🔹 Start server
-const PORT = process.env.PORT || 5001;
+// 💾 MongoDB Database Connection
+const mongoose = require("mongoose");
+mongoose.connect(process.env.MONGO_URI || "mongodb://127.0.0.1:27017/ezzstar")
+  .then(() => console.log("💾 Connected to MongoDB successfully"))
+  .catch(err => console.error("❌ MongoDB connection error:", err));
 
-app.listen(PORT, () => {
+// 🔹 Start server with Socket.io attachment
+const PORT = process.env.PORT || 5001;
+const http = require("http");
+const server = http.createServer(app);
+
+const { Server } = require('socket.io');
+const io = new Server(server, { cors: { origin: process.env.FRONTEND_URL || "http://localhost:5173" } });
+io.on('connection', (socket) => {
+  const userId = socket.handshake.auth.userId;
+  if (userId) socket.join(userId);
+});
+module.exports.io = io;
+
+// Initialize the socket manager
+require("./services/socket").setIO(io);
+
+server.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
