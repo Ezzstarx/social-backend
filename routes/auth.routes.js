@@ -12,7 +12,7 @@ router.get(
 // 🔐 Step 2: Callback
 router.get(
   "/google/callback",
-  passport.authenticate("google", { session: false }),
+  passport.authenticate("google", { session: false, failureRedirect: "/api/auth/google/failure" }),
   (req, res) => {
     const user = req.user;
 
@@ -23,9 +23,15 @@ router.get(
       { expiresIn: "7d" }
     );
 
+    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
+
     // 👉 Redirect to frontend with token
-    res.redirect(`http://localhost:3000/oauth-success?token=${token}`);
+    res.redirect(`${frontendUrl}/oauth-success?token=${token}`);
   }
 );
+
+router.get("/google/failure", (req, res) => {
+  res.status(401).json({ message: "Google authentication failed" });
+});
 
 module.exports = router;
