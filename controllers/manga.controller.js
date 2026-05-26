@@ -17,7 +17,6 @@ const getMangaTop = async (req, res) => {
   try {
     // Serve from cache if fresh
     if (cachedTop10 && (Date.now() - lastTop10Fetch) < TOP10_TTL) {
-      console.log('Serving cached top10 manga');
       return res.status(200).json(cachedTop10);
     }
 
@@ -54,7 +53,6 @@ const getMangaTop = async (req, res) => {
 
     res.status(200).json(transformedData);
   } catch (error) {
-    console.error("Top10 API error:", error.message);
     res.status(500).json({
       success: false,
       message: "Failed to fetch top manga",
@@ -67,7 +65,6 @@ const getMangaList = async (req, res) => {
   try {
     // Serve from cache if still fresh
     if (cachedMangaList && (Date.now() - lastFetchTime) < CACHE_TTL_MS) {
-      console.log('Serving cached manga list');
       return res.status(200).json(cachedMangaList);
     }
 
@@ -147,12 +144,35 @@ const getMangaByIdMangaDex = async (req, res) => {
     const manga = response.data.data;
     const coverArt = manga.relationships.find((rel) => rel.type === "cover_art");
     const coverFileName = coverArt?.attributes?.fileName;
+    const coverUrl = coverFileName
+      ? `/api/manga/cover?mangaId=${manga.id}&fileName=${coverFileName}`
+      : null;
+
+    // Extract author name
+    const authorRel = manga.relationships.find((rel) => rel.type === "author");
+    const authorName = authorRel?.attributes?.name || "Unknown";
+
+    // Extract title (prefer English, fallback)
+    const title = manga.attributes.title?.en ||
+      Object.values(manga.attributes.title || {})[0] ||
+      "Untitled";
+
+    // Build a unified object (same shape as platform manga, plus original data)
     const transformed = {
-      ...manga,
-      coverUrl: coverFileName
-        ? `/api/manga/cover?mangaId=${manga.id}&fileName=${coverFileName}`
-        : null,
+      id: manga.id,
+      title: title,
+      description: manga.attributes.description?.en || "No description",
+      author: authorName,
+      genres: manga.attributes.tags
+        ?.filter((t) => t.attributes.group === "genre")
+        .map((t) => t.attributes.name.en) || [],
+      status: manga.attributes.status,
+      coverUrl: coverUrl,
+      imageUrl: coverUrl,        // for compatibility with frontend that uses imageUrl
+      isPlatform: false,
+      original: manga,           // keep original data if needed
     };
+
     res.json(transformed);
   } catch (err) {
     console.error("MangaDex detail error:", err.message);
@@ -282,9 +302,19 @@ const getMangaById = async (req, res) => {
     if (!manga) {
       return res.status(404).json({ success: false, message: "Manga not found" });
     }
-    res.json({ success: true, data: manga });
+    res.json({
+      id: manga._id,
+      title: manga.title,
+      description: manga.description,
+      author: manga.author?.username || "Unknown",
+      coverUrl: manga.coverImage,
+      imageUrl: manga.coverImage,
+      isPlatform: true,
+      genres: manga.genres,
+      status: manga.status,
+    });
   } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+    res.status(205).json({ success: false, message: err.message });
   }
 };
 
