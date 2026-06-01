@@ -56,6 +56,16 @@ const MangaEpisodeSchema = new mongoose.Schema(
     price: {
       type: Number,
       default: 0
+    },
+
+    qualifiedViewCount: {
+      type: Number,
+      default: 0
+    },
+
+    lastRewardedAtView: {
+      type: Number,
+      default: 0
     }
   },
   {

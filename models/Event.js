@@ -90,6 +90,11 @@ const EventSchema = new mongoose.Schema(
     createdBy: {
       type: String, // or mongoose.Schema.Types.ObjectId ref: "User"
       default: "admin"
+    },
+
+    prizePool: {
+      type: Number,
+      default: 0
     }
   },
   {

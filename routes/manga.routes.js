@@ -13,6 +13,13 @@ const {
   searchManga,
   getMangaTop,
 } = require("../controllers/manga.controller");
+const {
+  searchJikanManga,
+  getTopJikanManga,
+  getJikanMangaById,
+  getZylaManga,
+  getZylaMangaById,
+} = require("../controllers/externalDiscovery.controller");
 
 const MangaRouter = express.Router();
 
@@ -20,6 +27,11 @@ const MangaRouter = express.Router();
    🔍 HYBRID SEARCH
 ----------------------------*/
 MangaRouter.get("/search", searchManga);
+MangaRouter.get("/jikan/search", searchJikanManga);
+MangaRouter.get("/jikan/top", getTopJikanManga);
+MangaRouter.get("/jikan/:id", getJikanMangaById);
+MangaRouter.get("/zyla", getZylaManga);
+MangaRouter.get("/zyla/:id", getZylaMangaById);
 
 /* ---------------------------
    🌐 MangaDex (external API)

@@ -1,6 +1,8 @@
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const User = require("../models/User");
+const Wallet = require("../models/Wallet");
+const XPProfile = require("../models/XPProfile");
 
 passport.use(
   new GoogleStrategy(
@@ -37,6 +39,10 @@ passport.use(
           authProvider: "google",
           profilePic: profile.photos[0]?.value
         });
+
+        // Instantiate Wallet and XPProfile documents on signup
+        await Wallet.create({ userId: user._id });
+        await XPProfile.create({ userId: user._id, totalXP: 0, currentLevel: 1 });
 
         done(null, user);
       } catch (err) {

@@ -96,6 +96,37 @@ const UserSchema = new mongoose.Schema(
       type: String,
       enum: ["local", "google", "wallet"],
       default: "local"
+    },
+
+    onboardingComplete: {
+      type: Boolean,
+      default: false
+    },
+
+    primaryRole: {
+      type: String,
+      enum: ['READER', 'CREATOR', 'EVENT_HOST', 'GAMER']
+    },
+
+    country: {
+      type: String
+    },
+
+    language: {
+      type: String
+    },
+
+    bannerUrl: {
+      type: String
+    },
+
+    displayName: {
+      type: String
+    },
+
+    isSuspended: {
+      type: Boolean,
+      default: false
     }
   },
   {
