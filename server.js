@@ -1,6 +1,9 @@
 const express = require("express");
 const cors = require("cors");
 const passport = require("passport");
+const http = require("http");
+const mongoose = require("mongoose");
+const { Server } = require("socket.io");
 require("dotenv").config();
 require("./config/passport");
 
@@ -48,27 +51,29 @@ app.get("/", (req, res) => {
 });
 
 // 💾 MongoDB Database Connection
-const mongoose = require("mongoose");
 mongoose.connect(process.env.MONGO_URI || "mongodb://127.0.0.1:27017/ezzstar")
   .then(() => console.log("💾 Connected to MongoDB successfully"))
   .catch(err => console.error("❌ MongoDB connection error:", err));
 
 // 🔹 Start server with Socket.io attachment
 const PORT = process.env.PORT || 5001;
-const http = require("http");
 const server = http.createServer(app);
 
-const { Server } = require('socket.io');
 const io = new Server(server, { cors: { origin: process.env.FRONTEND_URL || "http://localhost:5173" } });
 io.on('connection', (socket) => {
   const userId = socket.handshake.auth.userId;
   if (userId) socket.join(userId);
 });
-module.exports.io = io;
 
 // Initialize the socket manager
 require("./services/socket").setIO(io);
 
-server.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-});
+if (require.main === module) {
+  server.listen(PORT, () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+  });
+}
+
+module.exports = app;
+module.exports.server = server;
+module.exports.io = io;
