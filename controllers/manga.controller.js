@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const axios = require("axios");
 const Manga = require("../models/Manga");
 const MangaEpisode = require("../models/MangaEpisode");
@@ -298,7 +299,10 @@ const getUserManga = async (req, res) => {
 // GET /api/manga/:id (platform manga by ID)
 const getMangaById = async (req, res) => {
   try {
-    const manga = await Manga.findById(req.params.id);
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(404).json({ success: false, message: "Manga not found" });
+    }
+    const manga = await Manga.findById(req.params.id).populate("author", "username profilePic");
     if (!manga) {
       return res.status(404).json({ success: false, message: "Manga not found" });
     }
@@ -322,6 +326,9 @@ const getMangaById = async (req, res) => {
 const addEpisode = async (req, res) => {
   try {
     const mangaId = req.params.id;
+    if (!mongoose.Types.ObjectId.isValid(mangaId)) {
+      return res.status(404).json({ success: false, message: "Manga not found" });
+    }
     const { title, episodeNumber, pages } = req.body;
     const episode = await MangaEpisode.create({
       manga: mangaId,
@@ -339,7 +346,11 @@ const addEpisode = async (req, res) => {
 // GET /api/manga/:id/episodes
 const getEpisodes = async (req, res) => {
   try {
-    const episodes = await MangaEpisode.find({ manga: req.params.id }).sort({
+    const mangaId = req.params.id;
+    if (!mongoose.Types.ObjectId.isValid(mangaId)) {
+      return res.json({ success: true, data: [] });
+    }
+    const episodes = await MangaEpisode.find({ manga: mangaId }).sort({
       episodeNumber: 1,
     });
     res.json({ success: true, data: episodes });
