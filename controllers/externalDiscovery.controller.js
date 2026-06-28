@@ -179,38 +179,147 @@ const getFourChanThread = async (req, res) => {
   }
 };
 
-const requireZylaKey = (res) => {
-  if (process.env.ZYLA_API_KEY) return process.env.ZYLA_API_KEY;
-  res.status(503).json({
-    success: false,
-    message: "ZYLA_API_KEY is not configured on the backend",
-  });
-  return null;
-};
-
-const getZylaResource = async (req, res, endpointId, endpointName, message, extraParams = {}) => {
+const getZylaManga = async (req, res) => {
   try {
-    const key = requireZylaKey(res);
-    if (!key) return null;
+    const key = process.env.ZYLA_API_KEY;
+    if (key) {
+      const data = await requestJson(
+        `https://zylalabs.com/api/1760/anime+manga+and+novel+discovery+api/1375/fetch+manga`,
+        {
+          params: req.query,
+          headers: { Authorization: `Bearer ${key}` },
+        }
+      );
+      return res.json({ success: true, source: "zyla", data });
+    }
 
-    const data = await requestJson(
-      `https://zylalabs.com/api/1760/anime+manga+and+novel+discovery+api/${endpointId}/${endpointName}`,
-      {
-        params: { ...req.query, ...extraParams },
-        headers: { Authorization: `Bearer ${key}` },
-      }
-    );
-
-    return res.json({ success: true, source: "zyla", data });
+    // Fallback to Kitsu API (Free)
+    console.log("No ZYLA_API_KEY found, falling back to Kitsu API for Zyla tab");
+    const kitsuResponse = await requestJson("https://kitsu.io/api/edge/manga?page[limit]=20");
+    const kitsuData = kitsuResponse.data || [];
+    const mapped = kitsuData.map(item => {
+      const attrs = item.attributes || {};
+      return {
+        id: item.id,
+        title: attrs.canonicalTitle || attrs.titles?.en || attrs.titles?.en_jp || "Untitled",
+        author: "Various Authors",
+        genres: ["Manga"],
+        cover_image: attrs.posterImage?.medium || attrs.posterImage?.original || "/fallback-cover.jpg",
+        description: attrs.description || attrs.synopsis || "No description available.",
+      };
+    });
+    return res.json({ success: true, source: "zyla", data: mapped });
   } catch (error) {
-    return sendExternalError(res, error, message);
+    return sendExternalError(res, error, "Failed to fetch fallback manga from Kitsu");
   }
 };
 
-const getZylaManga = (req, res) => getZylaResource(req, res, 1375, "fetch+manga", "Failed to fetch manga from Zyla");
-const getZylaMangaById = (req, res) => getZylaResource(req, res, 1376, "fetch+manga+by+id", "Failed to fetch manga details from Zyla", { id: req.params.id });
-const getZylaNovels = (req, res) => getZylaResource(req, res, 1379, "fetch+novels", "Failed to fetch novels from Zyla");
-const getZylaNovelById = (req, res) => getZylaResource(req, res, 1380, "fetch+novels+by+id", "Failed to fetch novel details from Zyla", { id: req.params.id });
+const getZylaMangaById = async (req, res) => {
+  try {
+    const key = process.env.ZYLA_API_KEY;
+    const { id } = req.params;
+    if (key) {
+      const data = await requestJson(
+        `https://zylalabs.com/api/1760/anime+manga+and+novel+discovery+api/1376/fetch+manga+by+id`,
+        {
+          params: { id },
+          headers: { Authorization: `Bearer ${key}` },
+        }
+      );
+      return res.json({ success: true, source: "zyla", data });
+    }
+
+    // Fallback to Kitsu API (Free)
+    console.log("No ZYLA_API_KEY found, falling back to Kitsu API for Zyla manga details");
+    const kitsuItem = await requestJson(`https://kitsu.io/api/edge/manga/${id}`);
+    const item = kitsuItem.data || {};
+    const attrs = item.attributes || {};
+    const mapped = {
+      id: item.id,
+      title: attrs.canonicalTitle || attrs.titles?.en || attrs.titles?.en_jp || "Untitled",
+      author: "Various Authors",
+      genre: "Manga",
+      cover_image: attrs.posterImage?.medium || attrs.posterImage?.original || "/fallback-cover.jpg",
+      description: attrs.description || attrs.synopsis || "No description available.",
+    };
+    return res.json({ success: true, source: "zyla", data: mapped });
+  } catch (error) {
+    return sendExternalError(res, error, "Failed to fetch fallback manga details from Kitsu");
+  }
+};
+
+const getZylaNovels = async (req, res) => {
+  try {
+    const key = process.env.ZYLA_API_KEY;
+    if (key) {
+      const data = await requestJson(
+        `https://zylalabs.com/api/1760/anime+manga+and+novel+discovery+api/1379/fetch+novels`,
+        {
+          params: req.query,
+          headers: { Authorization: `Bearer ${key}` },
+        }
+      );
+      return res.json({ success: true, source: "zyla", data });
+    }
+
+    // Fallback to Open Library subjects (Free)
+    console.log("No ZYLA_API_KEY found, falling back to Open Library for Zyla novels");
+    const olResponse = await requestJson("https://openlibrary.org/subjects/fiction.json?limit=20");
+    const works = olResponse.works || [];
+    const mapped = works.map(work => {
+      const coverId = work.cover_id;
+      const coverUrl = coverId ? `https://covers.openlibrary.org/b/id/${coverId}-L.jpg` : "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?q=80&w=600&auto=format&fit=crop";
+      const authorName = work.authors?.map(a => a.name).join(", ") || "Various Authors";
+      return {
+        id: work.key ? work.key.replace(/^\/?works\//, "") : work.id,
+        title: work.title || "Untitled Novel",
+        author: authorName,
+        genre: work.subject?.[0] || "Fiction",
+        genres: work.subject || ["Fiction"],
+        cover_image: coverUrl,
+        description: work.first_publish_year ? `First published in ${work.first_publish_year}.` : "No description available.",
+      };
+    });
+    return res.json({ success: true, source: "zyla", data: mapped });
+  } catch (error) {
+    return sendExternalError(res, error, "Failed to fetch fallback novels from Open Library");
+  }
+};
+
+const getZylaNovelById = async (req, res) => {
+  try {
+    const key = process.env.ZYLA_API_KEY;
+    const { id } = req.params;
+    if (key) {
+      const data = await requestJson(
+        `https://zylalabs.com/api/1760/anime+manga+and+novel+discovery+api/1380/fetch+novels+by+id`,
+        {
+          params: { id },
+          headers: { Authorization: `Bearer ${key}` },
+        }
+      );
+      return res.json({ success: true, source: "zyla", data });
+    }
+
+    // Fallback to Open Library work details (Free)
+    console.log("No ZYLA_API_KEY found, falling back to Open Library for Zyla novel details");
+    const work = await requestJson(`https://openlibrary.org/works/${id}.json`);
+    const desc = typeof work.description === 'string' ? work.description : (work.description?.value || 'No description available.');
+    const coverId = work.covers?.[0];
+    const coverUrl = coverId ? `https://covers.openlibrary.org/b/id/${coverId}-L.jpg` : "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?q=80&w=600&auto=format&fit=crop";
+    const mapped = {
+      id: work.key ? work.key.replace(/^\/?works\//, "") : work.id,
+      title: work.title || "Untitled Novel",
+      author: "Various Authors",
+      genre: "Fiction",
+      cover_image: coverUrl,
+      description: desc,
+    };
+    return res.json({ success: true, source: "zyla", data: mapped });
+  } catch (error) {
+    return sendExternalError(res, error, "Failed to fetch fallback novel details from Open Library");
+  }
+};
 
 module.exports = {
   searchJikanManga,
