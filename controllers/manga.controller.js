@@ -258,15 +258,16 @@ const getChapterPages = async (req, res) => {
       }
     });
     const { baseUrl, chapter } = response.data;
+    const secureBaseUrl = baseUrl.replace(/^http:\/\//i, "https://");
     const { hash, data, dataSaver } = chapter;
-    const pages = data.map((filename) => `${baseUrl}/data/${hash}/${filename}`);
+    const pages = data.map((filename) => `${secureBaseUrl}/data/${hash}/${filename}`);
     const pagesDataSaver = dataSaver.map(
-      (filename) => `${baseUrl}/data-saver/${hash}/${filename}`
+      (filename) => `${secureBaseUrl}/data-saver/${hash}/${filename}`
     );
     res.json({
       success: true,
       chapterId: id,
-      baseUrl,
+      baseUrl: secureBaseUrl,
       hash,
       pages,
       pagesDataSaver,
@@ -500,6 +501,40 @@ const searchManga = async (req, res) => {
   }
 };
 
+// GET /api/manga/page-proxy
+const getPageProxy = async (req, res) => {
+  try {
+    const { url } = req.query;
+    if (!url) {
+      return res.status(400).json({ message: "Missing url parameter" });
+    }
+
+    const parsedUrl = new URL(url);
+    if (!parsedUrl.hostname.endsWith(".mangadex.network") && !parsedUrl.hostname.endsWith(".mangadex.org")) {
+      return res.status(400).json({ message: "Invalid host" });
+    }
+
+    const response = await axios.get(url, {
+      responseType: "stream",
+      headers: {
+        "Referer": "https://mangadex.org/",
+        "User-Agent": "YourMangaApp/1.0"
+      },
+    });
+
+    res.setHeader("Content-Type", response.headers["content-type"]);
+    res.setHeader("Cache-Control", "public, max-age=86400");
+    response.data.pipe(res);
+  } catch (err) {
+    console.error("Page proxy error:", err.message);
+    res.status(500).json({
+      success: false,
+      message: "Failed to proxy page",
+      error: err.message,
+    });
+  }
+};
+
 /* =====================================================
    EXPORT
 ===================================================== */
@@ -508,6 +543,7 @@ module.exports = {
   getMangaList,
   getMangaTop,
   getCoverProxy,
+  getPageProxy,
   getMangaByIdMangaDex,
   getChaptersByMangaId,
   getChapterPages,

@@ -2,6 +2,7 @@ const express = require("express");
 const {
   getMangaList,
   getCoverProxy,
+  getPageProxy,
   createManga,
   getMangaById,
   getUserManga,
@@ -39,6 +40,7 @@ MangaRouter.get("/zyla/:id", getZylaMangaById);
 MangaRouter.get("/", getMangaList);                     // List/explore
 MangaRouter.get("/top10", getMangaTop);                     // List/explore
 MangaRouter.get("/cover", getCoverProxy);               // Cover image proxy
+MangaRouter.get("/page-proxy", getPageProxy);           // Page image proxy
 MangaRouter.get("/external/:id", getMangaByIdMangaDex); // MangaDex manga details
 MangaRouter.get("/external/:id/chapters", getChaptersByMangaId); // Chapters list
 MangaRouter.get("/chapter/:id/pages", getChapterPages); // Chapter pages
