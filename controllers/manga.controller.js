@@ -189,18 +189,35 @@ const getMangaByIdMangaDex = async (req, res) => {
 const getChaptersByMangaId = async (req, res) => {
   try {
     const { id } = req.params;
-    const { limit = 100, offset = 0, translatedLanguage = ["en"] } = req.query;
-    const response = await axios.get(`https://api.mangadex.org/manga/${id}/feed`, {
-      params: {
-        "translatedLanguage[]": Array.isArray(translatedLanguage)
-          ? translatedLanguage
-          : [translatedLanguage],
-        limit: parseInt(limit),
-        offset: parseInt(offset),
-        order: { chapter: "desc" },
-        "includes[]": ["scanlation_group"],
-      },
-    });
+    const { limit = 100, offset = 0, translatedLanguage } = req.query;
+    
+    let languages = [];
+    if (translatedLanguage) {
+      languages = Array.isArray(translatedLanguage) ? translatedLanguage : [translatedLanguage];
+    } else {
+      languages = ["en"];
+    }
+
+    const params = {
+      limit: parseInt(limit),
+      offset: parseInt(offset),
+      order: { chapter: "desc" },
+      "includes[]": ["scanlation_group"],
+    };
+
+    if (languages.length > 0) {
+      params["translatedLanguage[]"] = languages;
+    }
+
+    let response = await axios.get(`https://api.mangadex.org/manga/${id}/feed`, { params });
+
+    // Fallback: If no translatedLanguage was explicitly requested, and we defaulted to ["en"],
+    // but the response returned 0 chapters, try fetching with ALL languages.
+    if (!translatedLanguage && response.data.total === 0) {
+      delete params["translatedLanguage[]"];
+      response = await axios.get(`https://api.mangadex.org/manga/${id}/feed`, { params });
+    }
+
     const chapters = response.data.data.map((ch) => ({
       id: ch.id,
       chapter: ch.attributes.chapter,
@@ -210,7 +227,9 @@ const getChaptersByMangaId = async (req, res) => {
       publishAt: ch.attributes.publishAt,
       createdAt: ch.attributes.createdAt,
       externalUrl: ch.attributes.externalUrl,
+      translatedLanguage: ch.attributes.translatedLanguage,
     }));
+
     res.json({
       success: true,
       total: response.data.total,
