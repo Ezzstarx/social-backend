@@ -34,7 +34,4 @@ const WalletSchema = new mongoose.Schema(
   }
 );
 
-// Indexes
-WalletSchema.index({ userId: 1 });
-
 module.exports = mongoose.model("Wallet", WalletSchema);

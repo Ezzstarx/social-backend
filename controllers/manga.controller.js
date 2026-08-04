@@ -119,19 +119,37 @@ const getCoverProxy = async (req, res) => {
     if (!mangaId || !fileName) {
       return res.status(400).json({ message: "Missing params" });
     }
-    const imageUrl = `https://uploads.mangadex.org/covers/${mangaId}/${fileName}`;
+    // Use .256.jpg size suffix for smaller, faster-loading thumbnails
+    const baseName = fileName.replace(/\.[^.]+$/, "");
+    const ext = fileName.split(".").pop() || "jpg";
+    const imageUrl = `https://uploads.mangadex.org/covers/${mangaId}/${baseName}.256.${ext}`;
     const response = await axios.get(imageUrl, {
       responseType: "stream",
       headers: { Referer: "https://mangadex.org/" },
+      timeout: 10000,
     });
-    res.setHeader("Content-Type", response.headers["content-type"]);
+    res.setHeader("Content-Type", response.headers["content-type"] || "image/jpeg");
+    res.setHeader("Cache-Control", "public, max-age=86400");
     response.data.pipe(res);
   } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: "Failed to fetch cover",
-      error: err.message,
-    });
+    // Fallback to original size without suffix
+    try {
+      const { mangaId, fileName } = req.query;
+      const fallbackUrl = `https://uploads.mangadex.org/covers/${mangaId}/${fileName}`;
+      const response = await axios.get(fallbackUrl, {
+        responseType: "stream",
+        headers: { Referer: "https://mangadex.org/" },
+        timeout: 10000,
+      });
+      res.setHeader("Content-Type", response.headers["content-type"] || "image/jpeg");
+      res.setHeader("Cache-Control", "public, max-age=86400");
+      response.data.pipe(res);
+    } catch (fallbackErr) {
+      res.status(404).json({
+        success: false,
+        message: "Cover not found",
+      });
+    }
   }
 };
 
@@ -338,7 +356,7 @@ const getMangaById = async (req, res) => {
       status: manga.status,
     });
   } catch (err) {
-    res.status(205).json({ success: false, message: err.message });
+    res.status(500).json({ success: false, message: err.message });
   }
 };
 

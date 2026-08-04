@@ -23,6 +23,7 @@ const {
 } = require("../controllers/externalDiscovery.controller");
 
 const MangaRouter = express.Router();
+const requireAuth = require("../middleware/requireAuth");
 
 /* ---------------------------
    🔍 HYBRID SEARCH
@@ -48,10 +49,10 @@ MangaRouter.get("/chapter/:id/pages", getChapterPages); // Chapter pages
 /* ---------------------------
    🧠 Your Platform (DB manga)
 ----------------------------*/
-MangaRouter.post("/create", createManga);               // Create manga
+MangaRouter.post("/create", requireAuth, createManga);               // Create manga
 MangaRouter.get("/user/:userId", getUserManga);        // Get user's manga
 MangaRouter.get("/:id", getMangaById);                 // Platform manga by ID
-MangaRouter.post("/:id/episode", addEpisode);          // Add episode to platform manga
+MangaRouter.post("/:id/episode", requireAuth, addEpisode);          // Add episode to platform manga
 MangaRouter.get("/:id/episodes", getEpisodes);         // Get episodes of platform manga
 
 module.exports = MangaRouter;

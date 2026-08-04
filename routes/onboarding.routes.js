@@ -20,7 +20,10 @@ router.post("/role", requireAuth, async (req, res) => {
     user.primaryRole = role;
     await user.save();
 
-    return res.status(200).json({ success: true, user });
+    const userObj = user.toObject();
+    delete userObj.password;
+
+    return res.status(200).json({ success: true, user: userObj });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
@@ -72,13 +75,15 @@ router.post("/profile", requireAuth, async (req, res) => {
     });
     notifyUser(userId, notif);
 
-    // Refresh wallet and xpProfile values after award
     wallet = await Wallet.findOne({ userId });
     xpProfile = await XPProfile.findOne({ userId });
 
+    const userObj = user.toObject();
+    delete userObj.password;
+
     return res.status(200).json({
       success: true,
-      user,
+      user: userObj,
       wallet,
       xpProfile,
       levelUpResult,
