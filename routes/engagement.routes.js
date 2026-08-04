@@ -1,5 +1,3 @@
-const express = require("express");
-const router = express.Router();
 const crypto = require("crypto");
 const Comment = require("../models/Comment");
 const Share = require("../models/Share");
@@ -7,7 +5,6 @@ const Reaction = require("../models/Reaction");
 const GistTopic = require("../models/GistTopic");
 const MangaEpisode = require("../models/MangaEpisode");
 const Chapter = require("../models/chapter");
-const User = require("../models/User");
 const requireAuth = require("../middleware/requireAuth");
 const abuseDetector = require("../services/abuseDetector");
 const viewTracker = require("../services/viewTracker");
@@ -56,7 +53,6 @@ async function checkAndProcessGistMilestone(contentId) {
   }
 }
 
-// Handler functions for clean dispatcher
 const recordViewHandler = async (req, res) => {
   try {
     const { contentType, contentId, durationSeconds, isBoosted, deviceHash } = req.body;
@@ -205,29 +201,10 @@ const createReactionHandler = async (req, res) => {
   }
 };
 
-// 🔹 ROUTE DISPATCHERS 🔹
-
-// POST /api/views/record
-router.post("/record", recordViewHandler);
-
-// Dispatcher for POST base routes: /api/comments, /api/shares, /api/reactions
-router.post("/", requireAuth, async (req, res, next) => {
-  if (req.baseUrl.endsWith("/comments")) {
-    return createCommentHandler(req, res, next);
-  } else if (req.baseUrl.endsWith("/shares")) {
-    return createShareHandler(req, res, next);
-  } else if (req.baseUrl.endsWith("/reactions")) {
-    return createReactionHandler(req, res, next);
-  }
-  return res.status(404).json({ error: "Endpoint not found" });
-});
-
-// Dispatcher for GET comments: /api/comments/:contentType/:contentId
-router.get("/:contentType/:contentId", async (req, res, next) => {
-  if (req.baseUrl.endsWith("/comments")) {
-    return getCommentsHandler(req, res, next);
-  }
-  return res.status(404).json({ error: "Endpoint not found" });
-});
-
-module.exports = router;
+module.exports = {
+  recordViewHandler,
+  createCommentHandler,
+  getCommentsHandler,
+  createShareHandler,
+  createReactionHandler,
+};

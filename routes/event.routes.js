@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const requireAuth = require('../middleware/requireAuth');
 const {
   createEvent,
   updateEvent,
@@ -12,18 +13,16 @@ const {
   assignWinner
 } = require('../controllers/event.controller');
 
-// IMPORTANT: Register the /my-events route BEFORE /:id to avoid Express treating "my-events" as an id param.
-
-router.get('/my-events', getMyEvents);
-
 router.get('/', getAllEvents);
+router.get('/my-events', requireAuth, getMyEvents);
 router.get('/:id', getEventById);
-router.post('/', createEvent);
-router.put('/:id', updateEvent);
-router.delete('/:id', deleteEvent);
 
-router.post('/:id/participate', participateInEvent);
-router.delete('/:id/leave', leaveEvent);
-router.post('/:id/winner', assignWinner);
+router.post('/', requireAuth, createEvent);
+router.put('/:id', requireAuth, updateEvent);
+router.delete('/:id', requireAuth, deleteEvent);
+
+router.post('/:id/participate', requireAuth, participateInEvent);
+router.delete('/:id/leave', requireAuth, leaveEvent);
+router.post('/:id/winner', requireAuth, assignWinner);
 
 module.exports = router;

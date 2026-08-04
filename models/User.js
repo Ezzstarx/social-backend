@@ -21,7 +21,7 @@ const UserSchema = new mongoose.Schema(
 
     password: {
       type: String,
-      required: true
+      select: false
     },
 
     // 👤 Profile
@@ -134,10 +134,5 @@ const UserSchema = new mongoose.Schema(
   }
 );
 
-// 🔍 Indexes (important for performance)
-UserSchema.index({ username: 1 });
-UserSchema.index({ email: 1 });
-UserSchema.index({ walletAddress: 1 });
-
-// 🚀 Export
+// Export
 module.exports = mongoose.model("User", UserSchema);

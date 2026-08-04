@@ -50,7 +50,7 @@ Each chapter explores the collision between imagination, technology, and fear of
   },
   {
     id: 3,
-    image: "https://images.unsplash.com/photo-1614728263952-84ea256f9ae9?w=400&q=80",
+    image: "https://images.unsplash.com/photo-1557683316-973673baf926?w=400&q=80",
     title: "Neon Silence",
     author: "K. Tanaka",
     genre: "Sci-fi, Action, Mystery",
@@ -88,7 +88,7 @@ To uncover the truth, she must enter a digital underworld where grief, code, and
   },
   {
     id: 5,
-    image: "https://images.unsplash.com/photo-1551269901-5c5e506549a8?w=400&q=80",
+    image: "https://images.unsplash.com/photo-1504192010706-dd7f569ee2be?w=400&q=80",
     title: "Crimson Tide",
     author: "L. Montgomery",
     genre: "Thriller, Mystery",
@@ -167,6 +167,18 @@ But each step beyond the veil demands a sacrifice, and the dead do not release w
 // Helper to ensure database is seeded with mock stories if empty
 async function ensureStoriesSeeded() {
   try {
+    // Fix broken image URLs in existing stories
+    const brokenUrlMap = {
+      "https://images.unsplash.com/photo-1614728263952-84ea256f9ae9?w=400&q=80": "https://images.unsplash.com/photo-1557683316-973673baf926?w=400&q=80",
+      "https://images.unsplash.com/photo-1551269901-5c5e506549a8?w=400&q=80": "https://images.unsplash.com/photo-1504192010706-dd7f569ee2be?w=400&q=80",
+      "https://images.unsplash.com/photo-1509347528160-9a9e33742cdb?w=400&q=80": "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=400&q=80",
+      "https://images.unsplash.com/photo-1533709752211-118fcaf03312?w=400&q=80": "https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?w=400&q=80",
+    };
+
+    for (const [broken, fixed] of Object.entries(brokenUrlMap)) {
+      await Story.updateMany({ coverImage: broken }, { coverImage: fixed });
+    }
+
     const storiesCount = await Story.countDocuments({});
     if (storiesCount > 0) {
       return;

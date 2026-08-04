@@ -22,6 +22,4 @@ const XPProfileSchema = new mongoose.Schema(
   }
 );
 
-XPProfileSchema.index({ userId: 1 });
-
 module.exports = mongoose.model("XPProfile", XPProfileSchema);
