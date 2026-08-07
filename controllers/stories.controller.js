@@ -226,6 +226,25 @@ My sweaty palm curves around my dagger as I weave through the crowd of spectator
 I lift to my toes to gauge my distance—and there it is.
 
 The platform. A massive stone the size of a stage, black rock speckled with silver like a fallen slab of night. It’s beautiful, one of the last remaining shreds of magic on this side of a land halved.`
+  },
+  {
+    id: 12,
+    image: "https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=400&q=80",
+    title: "Dungeon Crawler Carl",
+    author: "Matt Dinniman",
+    genre: "Science Fiction, Fantasy Fiction",
+    reward: "0.00005 SPCA",
+    category: "Trending",
+    genres: ["Science Fiction", "Fantasy Fiction"],
+    views: "98,200",
+    stars: 5,
+    comments: 421,
+    writer: "Matt Dinniman",
+    about: "The transformation occurred at approximately 2:23 AM, Pacific Standard Time. As far as I could tell, anyone who was indoors when it happened died instantly.",
+    artist: "Luciano Fleitas",
+    content: `The transformation occurred at approximately 2:23 AM, Pacific Standard Time. As far as I could tell, anyone who was indoors when it happened died instantly. If you had any sort of roof over you, you were dead. That included people in cars, airplanes, subways. Even tents and cardboard boxes. Hell, probably umbrellas, too. Though I’m not so sure about that one.
+
+I’m not gonna lie. You guys who were inside, probably warm and asleep and dreaming about some random bullshit? I’m jealous. You’re the lucky ones. You were just gone. Splattered into dust during the transformation.`
   }
 ];
 
