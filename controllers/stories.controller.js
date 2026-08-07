@@ -161,6 +161,29 @@ Some stories were buried for a reason, and some walls are better left unopened.`
     content: `A warrior priestess crosses into the land of the dead to recover the soul of her fallen king before a civil war consumes the living realm.
 
 But each step beyond the veil demands a sacrifice, and the dead do not release what they claim without a price.`
+  },
+  {
+    id: 9,
+    image: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=400&q=80",
+    title: "Into the Blue",
+    author: "Emma Brodie",
+    genre: "Contemporary Fiction",
+    reward: "0.00005 SPCA",
+    category: "Trending",
+    genres: ["Contemporary Fiction", "Romance"],
+    views: "45,210",
+    stars: 5,
+    comments: 215,
+    writer: "Emma Brodie",
+    about: "A Love Story. Ten minutes before dress rehearsal, AJ Graves sat alone in the auditorium of the Hayes Theater, watching the stage lights rise...",
+    artist: "Cassie Vu",
+    content: `Ten minutes before dress rehearsal, AJ Graves sat alone in the auditorium of the Hayes Theater, watching the stage lights rise. Her head was full of ticking. Ten minutes. One more run-through, just them. Then the doors would open, and—
+
+Tick, tick, tick, tick.
+
+What was she going to do?
+
+With a mechanized clink, the stage turned gold, and Noah Drew strode on carrying a prop chair. AJ stirred as his muscular, six foot three frame crossed center; he had such command, even when he wasn’t trying. He halted over a taped spike mark, his tousled black hair etched in light. He tried the chair this way then that, his expression so familiar it made AJ’s chest ache.`
   }
 ];
 
