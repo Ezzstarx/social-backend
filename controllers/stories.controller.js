@@ -184,6 +184,25 @@ Tick, tick, tick, tick.
 What was she going to do?
 
 With a mechanized clink, the stage turned gold, and Noah Drew strode on carrying a prop chair. AJ stirred as his muscular, six foot three frame crossed center; he had such command, even when he wasn’t trying. He halted over a taped spike mark, his tousled black hair etched in light. He tried the chair this way then that, his expression so familiar it made AJ’s chest ache.`
+  },
+  {
+    id: 10,
+    image: "https://images.unsplash.com/photo-1534447677768-be436bb09401?w=400&q=80",
+    title: "Yesteryear",
+    author: "Caro Claire Burke",
+    genre: "Romance, Time Travel",
+    reward: "0.00005 SPCA",
+    category: "Trending",
+    genres: ["Romance", "Time Travel Romance"],
+    views: "52,340",
+    stars: 5,
+    comments: 154,
+    writer: "Caro Claire Burke",
+    about: "This is the last day of the life I imagined for myself...",
+    artist: "Caro Claire Burke",
+    content: `This is the last day of the life I imagined for myself.
+
+I woke up two minutes before my alarm went off, like usual. Five fifty-eight and bing: eyes wide open, ready to greet the day. I’ve never had a hard time waking up in the morning. Never used the snooze button, either, not once in my life. Sobriety helps. I don’t drink. Discipline helps, too. I was born with spades of discipline, I’m practically overflowing with it—which is why, I think, I’ve never had that much trouble with anything in my life. Not motherhood, nor marriage, nor building a business, nor serving Him. All of it appeared to me as a series of tasks to be accomplished each day, at the right time, in the correct chronological order. I know it’s not that easy for other people, but it really is for me.`
   }
 ];
 
