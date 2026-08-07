@@ -203,6 +203,29 @@ With a mechanized clink, the stage turned gold, and Noah Drew strode on carrying
     content: `This is the last day of the life I imagined for myself.
 
 I woke up two minutes before my alarm went off, like usual. Five fifty-eight and bing: eyes wide open, ready to greet the day. I’ve never had a hard time waking up in the morning. Never used the snooze button, either, not once in my life. Sobriety helps. I don’t drink. Discipline helps, too. I was born with spades of discipline, I’m practically overflowing with it—which is why, I think, I’ve never had that much trouble with anything in my life. Not motherhood, nor marriage, nor building a business, nor serving Him. All of it appeared to me as a series of tasks to be accomplished each day, at the right time, in the correct chronological order. I know it’s not that easy for other people, but it really is for me.`
+  },
+  {
+    id: 11,
+    image: "https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=400&q=80",
+    title: "Starside",
+    author: "Alex Aster",
+    genre: "Romance, Fantasy",
+    reward: "0.00005 SPCA",
+    category: "Trending",
+    genres: ["Romance", "Fantasy"],
+    views: "67,800",
+    stars: 5,
+    comments: 245,
+    writer: "Alex Aster",
+    about: "A deadly competition called the Culling in a world split between the magic-rich realm of Starside and the struggling realm of Stormside.",
+    artist: "Alex Aster",
+    content: `This will kill me.
+
+My sweaty palm curves around my dagger as I weave through the crowd of spectators. My blade is hidden up my sleeve, the sparkling metal cold against my pulse. One wrong move, and I’ll stab myself, but it’s better than having my weapon noticed this far from the front.
+
+I lift to my toes to gauge my distance—and there it is.
+
+The platform. A massive stone the size of a stage, black rock speckled with silver like a fallen slab of night. It’s beautiful, one of the last remaining shreds of magic on this side of a land halved.`
   }
 ];
 
