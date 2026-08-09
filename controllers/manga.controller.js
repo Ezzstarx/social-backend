@@ -44,6 +44,9 @@ const getMangaTop = async (req, res) => {
           coverUrl: coverFileName
             ? `/api/manga/cover?mangaId=${manga.id}&fileName=${coverFileName}`
             : null,
+          imageUrl: coverFileName
+            ? `/api/manga/cover?mangaId=${manga.id}&fileName=${coverFileName}`
+            : null,
         };
       }),
     };
@@ -91,6 +94,9 @@ const getMangaList = async (req, res) => {
         return {
           ...manga,
           coverUrl: coverFileName
+            ? `/api/manga/cover?mangaId=${manga.id}&fileName=${coverFileName}`
+            : null,
+          imageUrl: coverFileName
             ? `/api/manga/cover?mangaId=${manga.id}&fileName=${coverFileName}`
             : null,
         };
