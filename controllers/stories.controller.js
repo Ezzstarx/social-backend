@@ -245,6 +245,27 @@ The platform. A massive stone the size of a stage, black rock speckled with silv
     content: `The transformation occurred at approximately 2:23 AM, Pacific Standard Time. As far as I could tell, anyone who was indoors when it happened died instantly. If you had any sort of roof over you, you were dead. That included people in cars, airplanes, subways. Even tents and cardboard boxes. Hell, probably umbrellas, too. Though I’m not so sure about that one.
 
 I’m not gonna lie. You guys who were inside, probably warm and asleep and dreaming about some random bullshit? I’m jealous. You’re the lucky ones. You were just gone. Splattered into dust during the transformation.`
+  },
+  {
+    id: 13,
+    image: "https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=400&q=80",
+    title: "Alchemised",
+    author: "SenLinYu",
+    genre: "Fantasy",
+    reward: "0.00005 SPCA",
+    category: "Trending",
+    genres: ["Fantasy"],
+    views: "1,200",
+    stars: 5,
+    comments: 42,
+    writer: "SenLinYu",
+    about: "A work of fiction which explores many of the darker aspects of war and survival. Helena wondered sometimes if she still had eyes. The darkness surrounding her never ended.",
+    artist: "Eva Eller",
+    content: `Helena wondered sometimes if she still had eyes. The darkness surrounding her never ended. She thought at first if she waited long enough, some glimmer of light would appear, or someone would come. Yet no matter how long she waited, there was nothing.
+
+Just endless dark.
+
+She had a body; she could feel it wrapped around her like a cage, but no amount of effort or determination could make it move. It floated inert and unresponsive except when jerking violently as the surges hit—jolts of electricity tearing through her, beginning at the base of her neck and making every muscle in her body seize violently. As suddenly as they came, they’d be gone. They were her only sense of time.`
   }
 ];
 
