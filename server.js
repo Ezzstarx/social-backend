@@ -82,7 +82,7 @@ app.use((err, req, res, next) => {
 });
 
 // MongoDB Database Connection
-mongoose.connect(process.env.MONGO_URI || "mongodb://127.0.0.1:27017/ezzstar")
+mongoose.connect(process.env.MONGO_URI || process.env.MONGO_URL || "mongodb://127.0.0.1:27017/ezzstar")
   .then(() => console.log("Connected to MongoDB successfully"))
   .catch(err => console.error("MongoDB connection error:", err));
 
