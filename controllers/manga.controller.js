@@ -3,6 +3,7 @@ const axios = require("axios");
 const Manga = require("../models/Manga");
 const MangaEpisode = require("../models/MangaEpisode");
 const User = require("../models/User");
+const xpEngine = require("../services/xpEngine");
 
 // In-memory cache
 let cachedMangaList = null;
@@ -381,6 +382,15 @@ const addEpisode = async (req, res) => {
       pages,
     });
     await Manga.findByIdAndUpdate(mangaId, { $inc: { totalEpisodes: 1 } });
+
+    // Blueprint §8: Award PUBLISH_CHAPTER XP (75 XP) to the manga author
+    const mangaDoc = await Manga.findById(mangaId).select("author");
+    if (mangaDoc && mangaDoc.author) {
+      await xpEngine.awardXP(mangaDoc.author, "PUBLISH_CHAPTER", episode._id.toString());
+    } else if (req.user) {
+      await xpEngine.awardXP(req.user._id, "PUBLISH_CHAPTER", episode._id.toString());
+    }
+
     res.status(201).json({ success: true, data: episode });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });

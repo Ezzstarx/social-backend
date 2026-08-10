@@ -1,4 +1,8 @@
 const Event = require("../models/Event");
+const Notification = require("../models/Notification");
+const xpEngine = require("../services/xpEngine");
+const rewardEngine = require("../services/rewardEngine");
+const { notifyUser } = require("../services/socket");
 
 const createEvent = async (req, res) => {
   try {
@@ -149,10 +153,39 @@ const participateInEvent = async (req, res) => {
       return res.status(400).json({ success: false, message: "Already registered for this event" });
     }
 
+    // Handle entry fee split (blueprint §21: 80% prize pool, 15% host, 5% platform)
+    let feeSplitResult = null;
+    if (event.price && event.price > 0) {
+      feeSplitResult = await rewardEngine.processEventEntryFee(userId, event._id, event.price);
+      // Award REGISTER_EVENT XP (25 XP) for paid events
+      await xpEngine.awardXP(userId, "REGISTER_EVENT", event._id.toString());
+    } else {
+      // Award JOIN_EVENT XP (10 XP) for free events
+      await xpEngine.awardXP(userId, "JOIN_EVENT", event._id.toString());
+    }
+
     event.participants.push({ userId, name });
     await event.save();
 
-    res.status(200).json({ success: true, message: "Successfully registered", data: { participantCount: event.participants.length } });
+    // Send join notification (blueprint §26: "Tournament joined")
+    const notif = await Notification.create({
+      userId,
+      type: "EVENT_JOINED",
+      title: "Event Joined!",
+      body: `You successfully registered for "${event.name}". Good luck!`,
+      referenceId: event._id.toString(),
+      referenceType: "Event",
+    });
+    notifyUser(userId, notif);
+
+    res.status(200).json({
+      success: true,
+      message: "Successfully registered",
+      data: {
+        participantCount: event.participants.length,
+        feeSplit: feeSplitResult,
+      },
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

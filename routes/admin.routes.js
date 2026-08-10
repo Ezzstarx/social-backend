@@ -5,6 +5,10 @@ const Wallet = require("../models/Wallet");
 const WalletTransaction = require("../models/WalletTransaction");
 const BoostCampaign = require("../models/BoostCampaign");
 const AbuseFlag = require("../models/AbuseFlag");
+const Gist = require("../models/Gist");
+const GistTopic = require("../models/GistTopic");
+const MangaEpisode = require("../models/MangaEpisode");
+const Chapter = require("../models/chapter");
 const requireAuth = require("../middleware/requireAuth");
 const requireAdmin = require("../middleware/requireAdmin");
 
@@ -246,6 +250,111 @@ router.get("/top-creators", async (req, res) => {
     }));
 
     return res.status(200).json({ success: true, topCreators });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /api/admin/top-gists
+// Blueprint §27: Top earning Gists by total topic activity score
+router.get("/top-gists", async (req, res) => {
+  try {
+    const topGistAgg = await GistTopic.aggregate([
+      {
+        $group: {
+          _id: "$gistId",
+          totalQualifiedViews: { $sum: "$qualifiedViewCount" },
+          totalComments: { $sum: "$commentCount" },
+          totalShares: { $sum: "$shareCount" },
+          topicCount: { $sum: 1 },
+          activityScore: {
+            $sum: { $add: ["$qualifiedViewCount", "$commentCount", "$shareCount"] },
+          },
+        },
+      },
+      { $sort: { activityScore: -1 } },
+      { $limit: 10 },
+    ]);
+
+    const gistIds = topGistAgg.map(g => g._id);
+    const gists = await Gist.find({ _id: { $in: gistIds } })
+      .populate("creatorId", "username displayName profilePic")
+      .lean();
+
+    const result = topGistAgg.map(agg => ({
+      gist: gists.find(g => g._id.toString() === agg._id?.toString()),
+      activityScore: agg.activityScore,
+      totalQualifiedViews: agg.totalQualifiedViews,
+      totalComments: agg.totalComments,
+      totalShares: agg.totalShares,
+      topicCount: agg.topicCount,
+    })).filter(r => r.gist);
+
+    return res.status(200).json({ success: true, topGists: result });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /api/admin/top-topics
+// Blueprint §27: Top GistTopics by qualified view count
+router.get("/top-topics", async (req, res) => {
+  try {
+    const topics = await GistTopic.find({})
+      .sort({ qualifiedViewCount: -1 })
+      .limit(10)
+      .populate("creatorId", "username displayName profilePic")
+      .populate("gistId", "name")
+      .select("title qualifiedViewCount commentCount shareCount gistId creatorId createdAt");
+
+    return res.status(200).json({ success: true, topTopics: topics });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /api/admin/top-chapters
+// Blueprint §27: Top manga episodes + story chapters by qualified view count
+router.get("/top-chapters", async (req, res) => {
+  try {
+    const topEpisodes = await MangaEpisode.find({})
+      .sort({ qualifiedViewCount: -1 })
+      .limit(5)
+      .populate("manga", "title author coverImage")
+      .select("title episodeNumber qualifiedViewCount manga createdAt");
+
+    const topChapters = await Chapter.find({})
+      .sort({ qualifiedViewCount: -1 })
+      .limit(5)
+      .populate("story", "title author coverImage")
+      .select("title chapterNumber qualifiedViewCount story createdAt");
+
+    const mangaChapters = topEpisodes.map(e => ({
+      type: "MANGA_CHAPTER",
+      id: e._id,
+      title: e.title,
+      number: e.episodeNumber,
+      qualifiedViewCount: e.qualifiedViewCount || 0,
+      parent: e.manga,
+      createdAt: e.createdAt,
+    }));
+
+    const storyChapters = topChapters.map(c => ({
+      type: "STORY_PART",
+      id: c._id,
+      title: c.title,
+      number: c.chapterNumber,
+      qualifiedViewCount: c.qualifiedViewCount || 0,
+      parent: c.story,
+      createdAt: c.createdAt,
+    }));
+
+    // Merge and sort by qualifiedViewCount
+    const combined = [...mangaChapters, ...storyChapters]
+      .sort((a, b) => b.qualifiedViewCount - a.qualifiedViewCount)
+      .slice(0, 10);
+
+    return res.status(200).json({ success: true, topChapters: combined });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }

@@ -50,6 +50,7 @@ app.use('/api/tournaments', require('./routes/tournaments.routes'));
 app.use('/api/notifications', require('./routes/notifications.routes'));
 app.use('/api/admin', require('./routes/admin.routes'));
 app.use('/api/feed', require('./routes/feed.routes'));
+app.use('/api/contests', require('./routes/contest.routes'));
 
 // Engagement routes - separate routers for each mount path
 const viewsRouter = express.Router();

@@ -5,6 +5,8 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const Wallet = require("../models/Wallet");
 const XPProfile = require("../models/XPProfile");
+const LevelConfig = require("../models/LevelConfig");
+const requireAuth = require("../middleware/requireAuth");
 
 // Google OAuth - Step 1: Redirect to Google
 router.get(
@@ -123,6 +125,40 @@ router.post("/login", async (req, res) => {
     res.status(200).json({ success: true, token, user: { _id: user._id, username: user.username } });
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /api/auth/me
+// Blueprint §28: Returns current user + wallet + XP + onboarding status
+router.get("/me", requireAuth, async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    const userObj = req.user.toObject();
+    delete userObj.password;
+
+    // Wallet
+    let wallet = await Wallet.findOne({ userId });
+    if (!wallet) wallet = await Wallet.create({ userId });
+
+    // XP Profile with level configs
+    let xpProfile = await XPProfile.findOne({ userId });
+    if (!xpProfile) xpProfile = await XPProfile.create({ userId, totalXP: 0, currentLevel: 1 });
+
+    const currentLevelConfig = await LevelConfig.findOne({ level: xpProfile.currentLevel });
+    const nextLevelConfig = await LevelConfig.findOne({ level: xpProfile.currentLevel + 1 });
+
+    return res.status(200).json({
+      success: true,
+      user: userObj,
+      wallet,
+      xpProfile,
+      currentLevelConfig,
+      nextLevelConfig,
+      onboardingComplete: req.user.onboardingComplete,
+    });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
   }
 });
 

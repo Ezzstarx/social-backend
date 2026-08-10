@@ -7,6 +7,8 @@ const GistTopic = require("../models/GistTopic");
 const Event = require("../models/Event");
 const BoostCampaign = require("../models/BoostCampaign");
 const Notification = require("../models/Notification");
+const Manga = require("../models/Manga");
+const Story = require("../models/Story");
 const requireAuth = require("../middleware/requireAuth");
 const requireOnboarding = require("../middleware/requireOnboarding");
 const { notifyUser } = require("../services/socket");
@@ -102,7 +104,21 @@ router.get("/home", requireAuth, requireOnboarding, async (req, res) => {
       await campaign.save();
     }
 
-    // 7. Recent Notifications (5 newest unread Notifications)
+    // 7. Recommended Manga (blueprint §9: top 5 by views)
+    const recommendedManga = await Manga.find({})
+      .sort({ views: -1 })
+      .limit(5)
+      .populate("author", "username displayName profilePic")
+      .select("title coverImage description genres status views likesCount totalEpisodes author");
+
+    // 8. Recommended Stories (blueprint §9: top 5 by views)
+    const recommendedStories = await Story.find({})
+      .sort({ views: -1 })
+      .limit(5)
+      .populate("author", "username displayName profilePic")
+      .select("title coverImage description genres status views likesCount totalChapters author");
+
+    // 9. Recent Notifications (5 newest unread Notifications)
     const recentNotifications = await Notification.find({ userId, isRead: false })
       .sort({ createdAt: -1 })
       .limit(5);
@@ -115,6 +131,8 @@ router.get("/home", requireAuth, requireOnboarding, async (req, res) => {
       trendingTopics,
       activeEvents,
       boostedContent,
+      recommendedManga,
+      recommendedStories,
       recentNotifications,
     });
   } catch (error) {
