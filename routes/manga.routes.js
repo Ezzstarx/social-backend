@@ -1,0 +1,58 @@
+const express = require("express");
+const {
+  getMangaList,
+  getCoverProxy,
+  getPageProxy,
+  createManga,
+  getMangaById,
+  getUserManga,
+  addEpisode,
+  getEpisodes,
+  getMangaByIdMangaDex,
+  getChaptersByMangaId,
+  getChapterPages,
+  searchManga,
+  getMangaTop,
+} = require("../controllers/manga.controller");
+const {
+  searchJikanManga,
+  getTopJikanManga,
+  getJikanMangaById,
+  getZylaManga,
+  getZylaMangaById,
+} = require("../controllers/externalDiscovery.controller");
+
+const MangaRouter = express.Router();
+const requireAuth = require("../middleware/requireAuth");
+
+/* ---------------------------
+   🔍 HYBRID SEARCH
+----------------------------*/
+MangaRouter.get("/search", searchManga);
+MangaRouter.get("/jikan/search", searchJikanManga);
+MangaRouter.get("/jikan/top", getTopJikanManga);
+MangaRouter.get("/jikan/:id", getJikanMangaById);
+MangaRouter.get("/zyla", getZylaManga);
+MangaRouter.get("/zyla/:id", getZylaMangaById);
+
+/* ---------------------------
+   🌐 MangaDex (external API)
+----------------------------*/
+MangaRouter.get("/", getMangaList);                     // List/explore
+MangaRouter.get("/top10", getMangaTop);                     // List/explore
+MangaRouter.get("/cover", getCoverProxy);               // Cover image proxy
+MangaRouter.get("/page-proxy", getPageProxy);           // Page image proxy
+MangaRouter.get("/external/:id", getMangaByIdMangaDex); // MangaDex manga details
+MangaRouter.get("/external/:id/chapters", getChaptersByMangaId); // Chapters list
+MangaRouter.get("/chapter/:id/pages", getChapterPages); // Chapter pages
+
+/* ---------------------------
+   🧠 Your Platform (DB manga)
+----------------------------*/
+MangaRouter.post("/create", requireAuth, createManga);               // Create manga
+MangaRouter.get("/user/:userId", getUserManga);        // Get user's manga
+MangaRouter.get("/:id", getMangaById);                 // Platform manga by ID
+MangaRouter.post("/:id/episode", requireAuth, addEpisode);          // Add episode to platform manga
+MangaRouter.get("/:id/episodes", getEpisodes);         // Get episodes of platform manga
+
+module.exports = MangaRouter;
